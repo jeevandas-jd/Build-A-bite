@@ -1,0 +1,57 @@
+API Endpoints Summary
+1. Authentication APIs (4)
+POST /api/auth/register
+
+POST /api/auth/login
+
+POST /api/auth/logout
+
+GET /api/auth/me
+
+2. Player APIs (3)
+GET /api/player/:id
+
+PUT /api/player/:id
+
+DELETE /api/player/:id (admin only)
+
+3. Game Session APIs (4)
+POST /api/game/start
+
+GET /api/game/session/:id
+
+POST /api/game/session/:id/step
+
+POST /api/game/session/:id/end
+
+4. Product & Instruction APIs (3)
+GET /api/products
+
+GET /api/products/:id
+
+GET /api/instructions/:difficulty
+
+5. Leaderboard APIs (3)
+GET /api/leaderboard
+
+POST /api/leaderboard
+
+GET /api/leaderboard/player/:id
+
+6. Admin APIs (3)
+GET /api/admin/players
+
+GET /api/admin/attempts
+
+GET /api/admin/leaderboard (download)
+
+7. Assets & Analytics APIs (3)
+GET /api/assets/icons
+
+GET /api/assets/fonts
+
+POST /api/analytics/event
+
+8. Realtime (Optional)
+WebSocket endpoint: /api/game/realtime
+
