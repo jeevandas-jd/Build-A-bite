@@ -8,6 +8,7 @@ const scoreSchema = new Schema({
   product: { type: String },
   score: { type: Number, required: true },
   difficulty: { type: String, enum: ['beginner', 'intermediate', 'expert'] },
+  timeToFinish: { type: Number }, // in seconds
   date: { type: Date, default: Date.now }
 });
 

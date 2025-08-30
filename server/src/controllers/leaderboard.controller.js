@@ -1,5 +1,5 @@
 const Score = require('../models/Score');
-
+const Product = require('../models/Product');
 // GET /api/leaderboard
 exports.getLeaderboard = async (req, res) => {
   try {
@@ -20,16 +20,20 @@ exports.submitScore = async (req, res) => {
     if (score == null || !difficulty || !product) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+    const productName=Product.findById(product).select('name');
+    console.log(`product id: ${product}, product name: ${productName}`); 
     const newScore = new Score({
       player: req.user.id,
       gameSession: sessionId,
       score,
       difficulty,
-      product,
+      productName,
       date: new Date(),
+      timeToFinish: req.body.timeToFinish // in seconds
     });
     await newScore.save();
     res.status(201).json({ message: 'Score submitted', score: newScore });
+    console.log(`New score submitted: Player ${req.user.id}, Score ${score}, Difficulty ${difficulty}, Product ${product}, Time to Finish ${req.body.timeToFinish}s`);
   } catch (err) {
     res.status(400).json({ error: 'Submission failed' });
   }

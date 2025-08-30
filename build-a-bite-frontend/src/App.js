@@ -5,7 +5,9 @@ import Dashboard from './pages/Dashboard';
 import Navbar from './components/ Navbar';
 import Register from './components/Register';
 import Products from './pages/Products';
-import GamePlay  from './pages/GamePlay'; // add your products page
+import GamePlay  from './pages/GamePlay';
+import Profile from './pages/Profile';
+import Leaderboard from './pages/LeaderBoard'; // add your products page
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -51,6 +53,26 @@ function App() {
             <ProtectedRoute>
               <MainLayout>
                 <Products />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route 
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Profile />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route 
+          path="/leaderboard"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Leaderboard />
               </MainLayout>
             </ProtectedRoute>
           }

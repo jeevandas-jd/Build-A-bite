@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
-import axiosClient from '../api/axiosClient';
-import FarmGuide from '../components/FarmGuid';
-import { useNavigate, useParams } from 'react-router-dom';
-import { clickSound, successSound } from '../utils/soundEffects';
+import React, { useEffect, useState, useRef } from "react";
+import axiosClient from "../api/axiosClient";
+import FarmGuide from "../components/FarmGuid";
+import { useNavigate, useParams } from "react-router-dom";
+import { clickSound, successSound } from "../utils/soundEffects";
+import ScoreCard from "../components/ScoreCard";
 
 function GamePlay() {
   const navigate = useNavigate();
@@ -18,6 +19,9 @@ function GamePlay() {
 
   const [previewing, setPreviewing] = useState(true);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [finalScore, setFinalScore] = useState(null);
+
   const timerId = useRef(null);
 
   // Sectioned available steps
@@ -54,14 +58,24 @@ function GamePlay() {
           setIngredients(product.availableIngredients || []);
           setProcesses([]);
           setEquipment([]);
+          setCorrectOrder(product.availableIngredients || []);
         } else if (difficulty === "intermediate") {
           setIngredients(product.availableIngredients || []);
           setProcesses(product.availableProcesses || []);
+          const correct = product.availableIngredients.concat(
+            product.availableProcesses
+          );
+          setCorrectOrder(correct);
           setEquipment([]);
         } else {
           setIngredients(product.availableIngredients || []);
           setProcesses(product.availableProcesses || []);
           setEquipment(product.availableEquipment || []);
+          const correct = product.availableIngredients.concat(
+            product.availableProcesses,
+            product.availableEquipment
+          );
+          setCorrectOrder(correct);
         }
 
         // Start preview phase
@@ -124,14 +138,35 @@ function GamePlay() {
     setMessage(`Added ${step}.`);
   };
 
-  // Evaluate game
-  const evaluateGame = () => {
+  // Evaluate game and show ScoreCard
+  const evaluateGame = async () => {
     clearInterval(timerId.current);
 
     let score = 0;
     const minLen = Math.min(steps.length, correctOrder.length);
     for (let i = 0; i < minLen; i++) {
       if (steps[i] === correctOrder[i]) score++;
+    }
+
+    const accuracy = Math.round((score / correctOrder.length) * 100);
+    const timeTaken = gameDurations[difficulty] - timeLeft;
+
+    const result = {
+      score,
+      accuracy,
+      difficulty,
+      product: productId,
+      sessionId,
+      timeToFinish: timeTaken,
+    };
+
+    setFinalScore(result);
+    setGameFinished(true);
+    console.log(`score data = ${JSON.stringify(result)}`);
+    try {
+      await axiosClient.post("/leaderboard", result);
+    } catch (err) {
+      console.error("Failed to submit score:", err);
     }
 
     successSound.play();
@@ -142,6 +177,22 @@ function GamePlay() {
 
   if (loading) return <p className="p-6 font-kidsFont">Loading game...</p>;
   if (error) return <p className="p-6 text-red-600 font-kidsFont">{error}</p>;
+
+  // ✅ Show ScoreCard after game ends
+if (gameFinished && finalScore) {
+  return (
+    <div className="min-h-screen bg-softWhite p-6 font-kidsFont">
+      <ScoreCard
+        score={finalScore.score}
+        total={correctOrder.length}
+        difficulty={finalScore.difficulty}
+        productId={finalScore.product}
+        sessionId={finalScore.sessionId}
+        timeToFinish={finalScore.timeToFinish}
+      />
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-softWhite p-6 font-kidsFont">

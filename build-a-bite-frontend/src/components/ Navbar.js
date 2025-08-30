@@ -19,8 +19,10 @@ function Navbar() {
       </div>
       <div className="space-x-6">
         <Link className="hover:text-yellow-300" to="/dashboard">Dashboard</Link>
+        <Link className="hover:text-yellow-300" to="/leaderboard">Leaderboard</Link>
         <Link className="hover:text-yellow-300" to="/products">Products</Link>
         <Link className="hover:text-yellow-300" to="/profile">Profile</Link>
+
         <button
           onClick={handleLogout}
           className="bg-sunnyYellow text-farmGreenDark font-bold px-3 py-1 rounded-lg hover:bg-yellow-400 transition"
