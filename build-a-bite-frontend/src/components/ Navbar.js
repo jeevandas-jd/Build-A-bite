@@ -5,12 +5,11 @@ function Navbar() {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
+  
   // Check screen size
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      // Close menu when switching to desktop view
       if (window.innerWidth >= 768) {
         setIsMenuOpen(false);
       }
@@ -26,121 +25,140 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-gradient-to-r from-farmGreen to-farmGreenDark text-softWhite p-4 font-kidsFont shadow-lg relative">
-      {/* Animated decorative elements */}
-      <div className="absolute -top-2 left-4 text-xl text-yellow-300 animate-spin-slow">
-        <i className="fas fa-sun"></i>
-      </div>
-      <div className="absolute -bottom-2 right-6 text-lg text-pink-400 animate-float">
-        <i className="fas fa-butterfly"></i>
+    <nav className="bg-gradient-to-r from-gray-900 via-purple-900 to-indigo-900 text-white p-4 font-mono shadow-2xl relative overflow-hidden border-b border-cyan-400/30">
+      {/* Futuristic background effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-scan-line"></div>
+        <div className="absolute top-2 left-20 w-1 h-1 bg-cyan-400 rounded-full animate-particle-1"></div>
+        <div className="absolute top-4 right-32 w-1 h-1 bg-purple-400 rounded-full animate-particle-2"></div>
+        <div className="absolute bottom-2 left-1/2 w-1 h-1 bg-pink-400 rounded-full animate-particle-3"></div>
+        <div
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(0, 255, 255, 0.2) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0, 255, 255, 0.2) 1px, transparent 1px)
+            `,
+            backgroundSize: '30px 30px',
+          }}
+        ></div>
       </div>
       
-      <div className="flex justify-between items-center">
-        <div 
-          className="text-2xl md:text-3xl font-bold cursor-pointer flex items-center gap-2 hover:scale-105 transition-transform duration-300"
-          onClick={() => navigate('/dashboard')}
+      <div className="flex justify-between items-center relative z-10">
+        {/* Logo */}
+        <Link 
+          to="/dashboard" 
+          className="text-2xl md:text-3xl font-bold flex items-center gap-3 hover:scale-105 transition-transform duration-300"
         >
-          <i className="fas fa-tractor text-yellow-300"></i>
-          <span className="text-shadow">Build A Bite</span>
-          <i className="fas fa-seedling text-yellow-300"></i>
-        </div>
+          <div className="relative">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 animate-logo-glow">🎮</span>
+            <div className="absolute inset-0 text-cyan-400/50 animate-pulse">🎮</div>
+          </div>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 font-bold tracking-wider">
+            BUILD A BITE
+          </span>
+          <div className="relative">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 animate-logo-glow">⚡</span>
+            <div className="absolute inset-0 text-purple-400/50 animate-pulse">⚡</div>
+          </div>
+        </Link>
 
-        {/* Desktop Navigation - Always visible on desktop */}
+        {/* Desktop Navigation */}
         {!isMobile && (
-          <div className="flex space-x-4 md:space-x-6 items-center">
+          <div className="flex space-x-6 items-center">
             <Link 
-              className="hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 flex items-center gap-1" 
-              to="/dashboard"
+              to="/dashboard" 
+              className="hover:text-cyan-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-cyan-400/10 border border-transparent hover:border-cyan-400/30"
             >
-              <i className="fas fa-home"></i>
-              <span className="hidden md:inline">Dashboard</span>
+              <span className="text-cyan-400">🏠</span>
+              <span className="hidden md:inline font-semibold">DASHBOARD</span>
             </Link>
             <Link 
-              className="hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 flex items-center gap-1" 
               to="/leaderboard"
+              className="hover:text-purple-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-purple-400/10 border border-transparent hover:border-purple-400/30"
             >
-              <i className="fas fa-trophy"></i>
-              <span className="hidden md:inline">Leaderboard</span>
+              <span className="text-purple-400">🏆</span>
+              <span className="hidden md:inline font-semibold">LEADERBOARD</span>
             </Link>
             <Link 
-              className="hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 flex items-center gap-1" 
               to="/products"
+              className="hover:text-pink-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-pink-400/10 border border-transparent hover:border-pink-400/30"
             >
-              <i className="fas fa-apple-alt"></i>
-              <span className="hidden md:inline">Products</span>
+              <span className="text-pink-400">🍎</span>
+              <span className="hidden md:inline font-semibold">PRODUCTS</span>
             </Link>
             <Link 
-              className="hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 flex items-center gap-1" 
               to="/profile"
+              className="hover:text-green-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-green-400/10 border border-transparent hover:border-green-400/30"
             >
-              <i className="fas fa-user"></i>
-              <span className="hidden md:inline">Profile</span>
+              <span className="text-green-400">👤</span>
+              <span className="hidden md:inline font-semibold">PROFILE</span>
             </Link>
 
             <button
               onClick={handleLogout}
-              className="bg-gradient-to-b from-sunnyYellow to-yellow-500 text-farmGreenDark font-bold px-3 py-1 md:px-4 md:py-2 rounded-xl hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0 shadow-md flex items-center gap-2"
+              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-400 hover:to-pink-400 text-white font-bold px-4 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-red-400/30 active:scale-95 flex items-center gap-2 relative overflow-hidden"
             >
-              <i className="fas fa-sign-out-alt"></i>
-              <span className="hidden md:inline">Logout</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-red-400/20 to-pink-400/20 blur-lg"></div>
+              <span className="relative">🚪</span>
+              <span className="hidden md:inline relative font-semibold">LOGOUT</span>
             </button>
           </div>
         )}
 
-        {/* Mobile menu button - Only shows on mobile */}
+        {/* Mobile menu button */}
         {isMobile && (
           <button 
-            className="text-2xl focus:outline-none relative z-50 bg-farmGreenDark p-2 rounded-full w-12 h-12 flex items-center justify-center shadow-lg"
+            className="text-2xl focus:outline-none relative z-50 bg-gray-800/50 backdrop-blur-sm p-3 rounded-xl border border-cyan-400/30 hover:border-cyan-400/60 transition-all duration-300"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            {/* Three dots icon */}
             {!isMenuOpen ? (
               <div className="flex flex-col gap-1">
-                <div className="w-2 h-2 rounded-full bg-yellow-300"></div>
-                <div className="w-2 h-2 rounded-full bg-yellow-300"></div>
-                <div className="w-2 h-2 rounded-full bg-yellow-300"></div>
+                <div className="w-6 h-0.5 bg-gradient-to-r from-cyan-400 to-purple-400 rounded"></div>
+                <div className="w-6 h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 rounded"></div>
+                <div className="w-6 h-0.5 bg-gradient-to-r from-pink-400 to-cyan-400 rounded"></div>
               </div>
             ) : (
-              <i className="fas fa-times text-yellow-300 text-xl"></i>
+              <div className="text-cyan-400 animate-spin-fast">✕</div>
             )}
           </button>
         )}
       </div>
 
-      {/* Mobile Navigation Menu - Animated dropdown */}
+      {/* Mobile Navigation Menu */}
       {isMobile && isMenuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-farmGreenDark mt-2 flex flex-col items-center py-4 space-y-4 z-40 shadow-xl rounded-b-2xl animate-menuSlide">
+        <div className="absolute top-full left-0 right-0 bg-gray-900/95 backdrop-blur-xl mt-2 flex flex-col items-center py-6 space-y-4 z-40 shadow-2xl rounded-b-3xl border-x border-b border-cyan-400/30 animate-menu-slide">
           <Link 
-            className="hover:text-yellow-300 transition-all duration-300 w-full text-center py-3 flex items-center justify-center gap-3 text-xl border-b border-farmGreen border-dashed" 
             to="/dashboard"
+            className="hover:text-cyan-400 transition-all duration-300 w-full text-center py-4 flex items-center justify-center gap-4 text-xl border-b border-gray-700/50 hover:bg-cyan-400/10" 
             onClick={() => setIsMenuOpen(false)}
           >
-            <i className="fas fa-home text-yellow-300"></i>
-            <span>Dashboard</span>
+            <span className="text-cyan-400">🏠</span>
+            <span className="font-semibold">DASHBOARD</span>
           </Link>
           <Link 
-            className="hover:text-yellow-300 transition-all duration-300 w-full text-center py-3 flex items-center justify-center gap-3 text-xl border-b border-farmGreen border-dashed" 
             to="/leaderboard"
+            className="hover:text-purple-400 transition-all duration-300 w-full text-center py-4 flex items-center justify-center gap-4 text-xl border-b border-gray-700/50 hover:bg-purple-400/10" 
             onClick={() => setIsMenuOpen(false)}
           >
-            <i className="fas fa-trophy text-yellow-300"></i>
-            <span>Leaderboard</span>
+            <span className="text-purple-400">🏆</span>
+            <span className="font-semibold">LEADERBOARD</span>
           </Link>
           <Link 
-            className="hover:text-yellow-300 transition-all duration-300 w-full text-center py-3 flex items-center justify-center gap-3 text-xl border-b border-farmGreen border-dashed" 
             to="/products"
+            className="hover:text-pink-400 transition-all duration-300 w-full text-center py-4 flex items-center justify-center gap-4 text-xl border-b border-gray-700/50 hover:bg-pink-400/10" 
             onClick={() => setIsMenuOpen(false)}
           >
-            <i className="fas fa-apple-alt text-yellow-300"></i>
-            <span>Products</span>
+            <span className="text-pink-400">🍎</span>
+            <span className="font-semibold">PRODUCTS</span>
           </Link>
           <Link 
-            className="hover:text-yellow-300 transition-all duration-300 w-full text-center py-3 flex items-center justify-center gap-3 text-xl border-b border-farmGreen border-dashed" 
             to="/profile"
+            className="hover:text-green-400 transition-all duration-300 w-full text-center py-4 flex items-center justify-center gap-4 text-xl border-b border-gray-700/50 hover:bg-green-400/10" 
             onClick={() => setIsMenuOpen(false)}
           >
-            <i className="fas fa-user text-yellow-300"></i>
-            <span>Profile</span>
+            <span className="text-green-400">👤</span>
+            <span className="font-semibold">PROFILE</span>
           </Link>
 
           <button
@@ -148,40 +166,58 @@ function Navbar() {
               handleLogout();
               setIsMenuOpen(false);
             }}
-            className="bg-gradient-to-b from-sunnyYellow to-yellow-500 text-farmGreenDark font-bold px-4 py-3 rounded-xl hover:from-yellow-400 hover:to-yellow-600 transition-all duration-300 w-3/4 flex items-center justify-center gap-2 text-xl mt-2 shadow-md"
+            className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-400 hover:to-pink-400 text-white font-bold px-6 py-4 rounded-xl transition-all duration-300 w-3/4 flex items-center justify-center gap-3 text-xl mt-4 shadow-lg relative overflow-hidden"
           >
-            <i className="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-400/20 to-pink-400/20 blur-lg"></div>
+            <span className="relative">🚪</span>
+            <span className="relative font-semibold">LOGOUT</span>
           </button>
+          
+          <div className="text-xs text-gray-400 mt-4 flex items-center">
+            <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse mr-2"></div>
+            MENU_ACTIVE
+          </div>
         </div>
       )}
       
-      {/* Add these styles for the animations */}
+      {/* Animations */}
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
+        @keyframes scan-line {
+          0% { transform: translateX(-100%); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: translateX(100%); opacity: 0; }
         }
-        @keyframes spin-slow {
+        @keyframes particle-1 {
+          0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+          50% { transform: translateY(-8px) scale(1.5); opacity: 1; }
+        }
+        @keyframes particle-2 {
+          0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
+          50% { transform: translateY(-6px) translateX(4px) scale(1.3); opacity: 1; }
+        }
+        @keyframes particle-3 {
+          0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+          50% { transform: translateY(-10px) scale(1.2); opacity: 0.4; }
+        }
+        @keyframes logo-glow {
+          0%, 100% { filter: brightness(1) hue-rotate(0deg); transform: scale(1); }
+          50% { filter: brightness(1.3) hue-rotate(90deg); transform: scale(1.1); }
+        }
+        @keyframes menu-slide {
+          0% { opacity: 0; transform: translateY(-30px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes spin-fast {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-        @keyframes menuSlide {
-          0% { opacity: 0; transform: translateY(-20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-float {
-          animation: float 4s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 20s linear infinite;
-        }
-        .animate-menuSlide {
-          animation: menuSlide 0.3s ease-out forwards;
-        }
-        .text-shadow {
-          text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
-        }
+        .animate-scan-line { animation: scan-line 6s linear infinite; }
+        .animate-particle-1 { animation: particle-1 3s ease-in-out infinite; }
+        .animate-particle-2 { animation: particle-2 4s ease-in-out infinite 1s; }
+        .animate-particle-3 { animation: particle-3 5s ease-in-out infinite 2s; }
+        .animate-logo-glow { animation: logo-glow 4s ease-in-out infinite; }
+        .animate-menu-slide { animation: menu-slide 0.4s ease-out forwards; }
+        .animate-spin-fast { animation: spin-fast 0.5s linear infinite; }
       `}</style>
     </nav>
   );
