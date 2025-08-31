@@ -24,8 +24,34 @@ function Navbar() {
     navigate('/login');
   };
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMenuOpen && isMobile) {
+        const menu = document.querySelector('.mobile-menu');
+        const menuButton = document.querySelector('.menu-button');
+        
+        if (menu && !menu.contains(event.target) && 
+            menuButton && !menuButton.contains(event.target)) {
+          setIsMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen, isMobile]);
+
   return (
     <nav className="bg-gradient-to-r from-gray-900 via-purple-900 to-indigo-900 text-white p-4 font-mono shadow-2xl relative overflow-hidden border-b border-cyan-400/30">
+      {/* Overlay when mobile menu is open */}
+      {isMobile && isMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30"
+          onClick={() => setIsMenuOpen(false)}
+        ></div>
+      )}
+      
       {/* Futuristic background effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-scan-line"></div>
@@ -109,17 +135,21 @@ function Navbar() {
         {/* Mobile menu button */}
         {isMobile && (
           <button 
-            className="text-2xl focus:outline-none relative z-50 bg-gray-800/50 backdrop-blur-sm p-3 rounded-xl border border-cyan-400/30 hover:border-cyan-400/60 transition-all duration-300"
+            className="menu-button text-2xl focus:outline-none relative z-40 bg-gray-800/50 backdrop-blur-sm p-3 rounded-xl border border-cyan-400/30 hover:border-cyan-400/60 transition-all duration-300"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
           >
             {!isMenuOpen ? (
-              <div className="flex flex-col gap-1">
-                <div className="w-6 h-0.5 bg-gradient-to-r from-cyan-400 to-purple-400 rounded"></div>
-                <div className="w-6 h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 rounded"></div>
-                <div className="w-6 h-0.5 bg-gradient-to-r from-pink-400 to-cyan-400 rounded"></div>
+              <div className="flex flex-col gap-1.5 w-6">
+                <div className="w-full h-0.5 bg-gradient-to-r from-cyan-400 to-purple-400 rounded transition-all duration-300"></div>
+                <div className="w-full h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 rounded transition-all duration-300"></div>
+                <div className="w-full h-0.5 bg-gradient-to-r from-pink-400 to-cyan-400 rounded transition-all duration-300"></div>
               </div>
             ) : (
-              <div className="text-cyan-400 animate-spin-fast">✕</div>
+              <div className="relative w-6 h-6">
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-cyan-400 to-purple-400 rounded transform rotate-45 transition-all duration-300"></div>
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 rounded transform -rotate-45 transition-all duration-300"></div>
+              </div>
             )}
           </button>
         )}
@@ -127,7 +157,17 @@ function Navbar() {
 
       {/* Mobile Navigation Menu */}
       {isMobile && isMenuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-gray-900/95 backdrop-blur-xl mt-2 flex flex-col items-center py-6 space-y-4 z-40 shadow-2xl rounded-b-3xl border-x border-b border-cyan-400/30 animate-menu-slide">
+        <div className="mobile-menu fixed top-0 left-0 right-0 h-full bg-gray-900/95 backdrop-blur-xl flex flex-col items-center py-6 space-y-4 z-40 shadow-2xl overflow-y-auto">
+          <div className="w-full flex justify-end p-4">
+            <button 
+              className="text-2xl text-cyan-400 hover:text-cyan-300 transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+              aria-label="Close menu"
+            >
+              ✕
+            </button>
+          </div>
+          
           <Link 
             to="/dashboard"
             className="hover:text-cyan-400 transition-all duration-300 w-full text-center py-4 flex items-center justify-center gap-4 text-xl border-b border-gray-700/50 hover:bg-cyan-400/10" 
