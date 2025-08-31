@@ -30,24 +30,33 @@ function Products() {
     fetchUser();
   }, []);
 
-  const fetchProducts = () => {
-    axiosClient.get('/products')
-      .then(res => {
-        const productsFixed = res.data.map(p => ({
-          ...p,
-          availableIngredients: Array.isArray(p.availableIngredients) ? p.availableIngredients : [],
-          availableProcesses: Array.isArray(p.availableProcesses) ? p.availableProcesses : [],
-          availableEquipment: Array.isArray(p.availableEquipment) ? p.availableEquipment : [],
-          correctOrder: Array.isArray(p.correctOrder) ? p.correctOrder : [],
-        }));
-        setProducts(productsFixed);
-        setLoading(false);
-      })
-      .catch(() => {
-        setProducts([]);
-        setLoading(false);
-      });
-  };
+const fetchProducts = () => {
+  axiosClient.get('/products')
+    .then(async res => {
+      // Fetch full details for each product
+      const productsWithDetails = [];
+      for (let i = 0; i < res.data.length; i++) {
+        const productData = await axiosClient.get(`/products/${res.data[i]._id}`);
+        productsWithDetails.push(productData.data);
+      }
+
+      // Normalize arrays properly
+      const productsFixed = productsWithDetails.map(p => ({
+        ...p,
+        availableIngredients: Array.isArray(p.availableIngredients) ? p.availableIngredients : [],
+        availableProcesses: Array.isArray(p.availableProcesses) ? p.availableProcesses : [],
+        availableEquipment: Array.isArray(p.availableEquipment) ? p.availableEquipment : [],
+        correctOrder: Array.isArray(p.correctOrder) ? p.correctOrder : [],
+      }));
+
+      setProducts(productsFixed);
+      setLoading(false);
+    })
+    .catch(() => {
+      setProducts([]);
+      setLoading(false);
+    });
+};
 
   const fetchUser = () => {
     axiosClient.get('/auth/me')
@@ -239,11 +248,13 @@ function Products() {
 
       <div className="relative z-10">
         <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-6 text-center">
-          QUANTUM SYNTHESIS PROTOCOLS
+          AVILABLE PRODUCTS
         </h2>
-
-        <FarmGuide message="Explore all products and build what you want. Admin users can manage products." />
-
+{user?.isAdmin ? (
+  <FarmGuide message="Hello admin, this is your place to perform create, update, and delete operations on the products database." />
+) : (
+  <FarmGuide message="Explore all products and build what you want. Admin users can manage products." />
+)}
         {user?.isAdmin && (
           <div className="flex justify-end mb-4">
             <button
@@ -264,11 +275,13 @@ function Products() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
             {products.map(product => (
+              
               <div 
                 key={product._id}
+                
                 className="bg-gray-800/60 backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-5 shadow-lg hover:shadow-cyan-400/20 hover:scale-105 transition-all duration-300 group relative overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
                 <div className="absolute top-4 right-4 bg-cyan-400/20 text-cyan-400 text-xs px-2 py-1 rounded-full uppercase font-bold">
                   ID: {product._id.slice(-4)}
                 </div>
@@ -293,22 +306,31 @@ function Products() {
                   </div>
                 </div>
 
-                {user?.isAdmin && (
-                  <div className="flex gap-2 mt-4 justify-center">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleOpenModal(product); }}
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product); }}
-                      className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
+              {user?.isAdmin && (
+                <div className="flex gap-2 mt-4 justify-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('Editing product:', product);
+                    setFormData(product);
+                    handleOpenModal(product);   // pass product directly, not formData (which may be stale)
+                  }}
+                  className="cursor-pointer bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Edit
+                </button>
+                  <button
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      handleDeleteProduct(product); 
+                    }}
+                    className="cursor-pointer bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+
               </div>
             ))}
           </div>

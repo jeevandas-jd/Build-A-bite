@@ -49,3 +49,14 @@ exports.getPlayerScores = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+exports.clearAllScores = async (req, res) => {
+  if (false) {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+  try {
+    await Score.deleteMany({});
+    res.json({ message: 'All scores cleared' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};

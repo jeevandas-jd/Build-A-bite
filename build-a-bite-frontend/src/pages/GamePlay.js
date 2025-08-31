@@ -179,7 +179,7 @@ function GamePlay() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 flex items-center justify-center">
       <div className="text-center">
         <div className="text-6xl mb-4 animate-spin">⚙️</div>
-        <p className="text-cyan-400 font-mono text-xl">INITIALIZING GAME PROTOCOL...</p>
+        <p className="text-cyan-400 font-mono text-xl">INITIALIZING GAME ...</p>
       </div>
     </div>
   );
@@ -238,9 +238,9 @@ function GamePlay() {
         <div className="flex justify-between items-center mb-6 bg-gray-800/60 backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-4">
           <div>
             <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-1">
-              SYNTHESIS TARGET: {productName}
+              TARGET: {productName}
             </h2>
-            <div className="text-sm text-gray-400 uppercase tracking-wider">Mission Protocol Active</div>
+            <div className="text-sm text-gray-400 uppercase tracking-wider">Mission Active</div>
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400 mb-1">TIME REMAINING</div>
@@ -259,7 +259,7 @@ function GamePlay() {
             <div className="relative">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-3xl animate-spin-slow">📋</span>
-                <h3 className="text-xl font-bold text-yellow-400 uppercase tracking-wider">Synthesis Protocol (Preview)</h3>
+                <h3 className="text-xl font-bold text-yellow-400 uppercase tracking-wider">order (Preview)</h3>
               </div>
               <div className="grid gap-3">
                 {correctOrder.map((step, idx) => (
@@ -277,7 +277,7 @@ function GamePlay() {
           <div className="space-y-8">
             {ingredients.length > 0 && (
               <Section
-                title="Bio-Materials"
+                title="Ingredients"
                 steps={ingredients}
                 stepsChosen={steps}
                 handleAddStep={handleAddStep}
@@ -289,7 +289,7 @@ function GamePlay() {
 
             {processes.length > 0 && (
               <Section
-                title="Synthesis Protocols"
+                title="Processes"
                 steps={processes}
                 stepsChosen={steps}
                 handleAddStep={handleAddStep}
@@ -301,7 +301,7 @@ function GamePlay() {
 
             {equipment.length > 0 && (
               <Section
-                title="Quantum Equipment"
+                title="Equipments"
                 steps={equipment}
                 stepsChosen={steps}
                 handleAddStep={handleAddStep}

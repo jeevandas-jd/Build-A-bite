@@ -1,4 +1,31 @@
+import { use, useEffect } from "react";
+import axiosClient from "../api/axiosClient";
+import { Navigate } from "react-router-dom";
+
+import { useNavigate } from "react-router-dom";
+
 function ScoreCard({ score, total, difficulty, productId, sessionId, timeToFinish, accuracy }) {
+  
+    const navigate = useNavigate();
+    useEffect(() => {
+    const submitScore = async () => {
+      try {
+        await axiosClient.post("/leaderboard", {
+          product: productId,
+          score,
+          difficulty,
+          timeToFinish,
+          gameSession: sessionId,
+        });
+        console.log("✅ Score submitted successfully");
+      } catch (err) {
+        console.error("❌ Error submitting score:", err);
+      }
+    };
+
+    submitScore();
+  }, [score, difficulty, productId, sessionId, timeToFinish]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 p-6 font-mono relative overflow-hidden">
       {/* Celebration background effects */}
@@ -37,13 +64,13 @@ function ScoreCard({ score, total, difficulty, productId, sessionId, timeToFinis
             </div>
           </div>
           
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
-          >
-            <span className="mr-2">🏠</span>
-            RETURN TO BASE
-          </button>
+      <button
+        onClick={() => navigate("/leaderboard")} // ✅ navigate to leaderboard
+        className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
+      >
+        <span className="mr-2">🏠</span>
+        SHOW LEADER BOARD
+      </button>
         </div>
       </div>
 
