@@ -89,7 +89,7 @@ function App() {
       />
 
         {/* Catch-all → could go to dashboard instead of login */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/Login" replace />} />
       </Routes>
     </BrowserRouter>
   );

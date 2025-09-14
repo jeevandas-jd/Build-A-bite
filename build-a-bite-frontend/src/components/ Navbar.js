@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axiosClient from '../api/axiosClient';
 
 function Navbar() {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Check screen size
   useEffect(() => {
@@ -23,7 +25,12 @@ function Navbar() {
     localStorage.removeItem('token');
     navigate('/login');
   };
-
+  useEffect(() => {
+    checkAdmin()
+  }, [])
+  const checkAdmin = () => {
+    axiosClient.get('auth/me').then(res=>setIsAdmin(res.data.isAdmin)).catch(err=>console.log(err))
+  }
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -120,6 +127,18 @@ function Navbar() {
               <span className="text-green-400">👤</span>
               <span className="hidden md:inline font-semibold">PROFILE</span>
             </Link>
+
+            {isAdmin && (
+              <Link 
+                to="/admin"
+                className="hover:text-yellow-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-yellow-400/10 border border-transparent hover:border-yellow-400/30"
+              >
+                              <span className="text-green-400">👤</span>
+              <span className="hidden md:inline font-semibold">UserMnager</span>
+              </Link>
+            )
+
+          }
 
             <button
               onClick={handleLogout}
