@@ -1,5 +1,6 @@
 import axios from 'axios';
-
+//http://localhost:5000
+//https://build-a-bite-o8hp.onrender.com/api
 const axiosClient = axios.create({
   baseURL: 'https://build-a-bite-o8hp.onrender.com/api',
 });

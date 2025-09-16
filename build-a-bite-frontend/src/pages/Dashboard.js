@@ -81,7 +81,7 @@ function Dashboard() {
 
         {/* Farm Guide styled as briefing */}
 =
-              <FarmGuide   message={`hello ${user?.name || "friend"},\n  choose what you want, lets Build A Bite`}
+              <FarmGuide   message={`Hello ${user?.name || "friend"},\n  choose what you want, lets Build A Bite`}
  />
 
 

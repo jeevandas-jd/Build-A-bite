@@ -7,7 +7,8 @@ import Register from './components/Register';
 import Products from './pages/Products';
 import GamePlay  from './pages/GamePlay';
 import Profile from './pages/Profile';
-import Leaderboard from './pages/LeaderBoard'; // add your products page
+import Leaderboard from './pages/LeaderBoard';
+import AdminDashboard from './pages/AdminDashBoard';// add your products page
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -87,6 +88,17 @@ function App() {
           
         } 
       />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AdminDashboard />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
 
         {/* Catch-all → could go to dashboard instead of login */}
         <Route path="*" element={<Navigate to="/Login" replace />} />

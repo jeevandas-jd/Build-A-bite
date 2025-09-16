@@ -14,6 +14,14 @@ exports.getPlayer = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+exports.getAllPlayers = async (req, res) => {
+  try {
+    console.log("Fetching all players");
+  } catch (err) {
+    console.error("Error fetching players:", err);
+    res.status(500).json({ error: "Server error" });
+  } 
+};
 
 // PUT /api/player/:id
 exports.updatePlayer = async (req, res) => {

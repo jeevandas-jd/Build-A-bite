@@ -13,6 +13,6 @@ router.post('/', authenticate, leaderboardController.submitScore);
 router.get('/player/:id', leaderboardController.getPlayerScores);
 
 // (Admin only) Clear all scores - for testing purposes
-//router.delete('/clear', leaderboardController.clearAllScores);
+router.delete('/clear', leaderboardController.clearAllScores);
 
 module.exports = router;

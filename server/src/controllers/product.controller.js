@@ -67,9 +67,9 @@ exports.deleteProduct = async (req, res) => {
 
 // GET /api/products/instructions/:difficulty
 const instructions = {
-  beginner: 'Beginner instructions...',
-  intermediate: 'Intermediate instructions...',
-  expert: 'Expert instructions...'
+  beginner: '* 5 second will be provided for checking   \n the correct order (preview)\n* The time limit for completing the mission will be 45 seconds\n* Select the ingredients in the correct order accordingly\n* After selecting the ingredients just click the complete mission ',
+  intermediate: 'Instructions - intermediate \n* Preview Time: You will have 10 seconds to review the correct order.\n* Mission Time: You must complete the task within 70 seconds.\n* Task: Select the ingredients + process in the correct order.\n* Execution: Once completed, the executed sequence will be shown at the bottom of the page.\n* Final Step: After arranging the (ingredients + process), click "Complete Mission" to submit.  ',
+  expert: 'Mission Instructions-  expert \n*Preview Time: You will have 15  seconds to review the correct order.\nMission Time: You must complete the task within 95 seconds.\n*Task: Select the ingredients + process+ equipments in the correct order.\n*Execution: Once completed, the executed sequence will be shown at the bottom of the page.\n*Final Step: After arranging the (ingredients + process + equipments ), click "Complete Mission" to submit.\nALL THE  BEST '
 };
 
 exports.getInstructions = (req, res) => {

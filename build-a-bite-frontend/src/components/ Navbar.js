@@ -133,8 +133,8 @@ function Navbar() {
                 to="/admin"
                 className="hover:text-yellow-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-yellow-400/10 border border-transparent hover:border-yellow-400/30"
               >
-                              <span className="text-green-400">👤</span>
-              <span className="hidden md:inline font-semibold">UserMnager</span>
+                              <span className="text-green-400">👩🏻‍💻</span>
+              <span className="hidden md:inline font-semibold">Mnager</span>
               </Link>
             )
 
@@ -219,7 +219,14 @@ function Navbar() {
             <span className="text-green-400">👤</span>
             <span className="font-semibold">PROFILE</span>
           </Link>
-
+          <Link 
+            to="/admin"
+            className="hover:text-green-400 transition-all duration-300 w-full text-center py-4 flex items-center justify-center gap-4 text-xl border-b border-gray-700/50 hover:bg-green-400/10" 
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span className="text-green-400">👩🏻‍💻</span>
+            <span className="font-semibold">Manager</span>
+          </Link>
           <button
             onClick={() => {
               handleLogout();

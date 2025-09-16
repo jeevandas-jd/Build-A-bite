@@ -76,11 +76,13 @@ const DifficultySelector = ({ productId, onClose }) => {
               <h3 className="font-semibold text-lg text-cyan-300 mb-3">
                 Instructions ({selectedLevel})
               </h3>
-              {loading ? (
-                <p className="text-gray-400 animate-pulse">Loading...</p>
-              ) : (
-                <p className="mb-6 text-gray-200">{instructions}</p>
-              )}
+           {!loading && instructions && (
+  <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
+    {instructions.split("\n").map((line, index) => (
+      <li key={index}>{line.replace(/^\* /, "")}</li>
+    ))}
+  </ul>
+)}
 
               <button
                 onClick={handleStartGame}
