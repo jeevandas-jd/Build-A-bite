@@ -66,11 +66,11 @@ function Leaderboard() {
               <thead>
                 <tr className="border-b border-cyan-400/30">
                   <th className="p-4 text-cyan-400 text-left">RANK</th>
-                  <th className="p-4 text-cyan-400 text-left">OPERATOR</th>
+                  <th className="p-4 text-cyan-400 text-left">NAME</th>
                   <th className="p-4 text-cyan-400 text-center">SCORE</th>
                   <th className="p-4 text-cyan-400 text-center">ACCURACY</th>
                   <th className="p-4 text-cyan-400 text-center">DIFFICULTY</th>
-                  <th className="p-4 text-cyan-400 text-center">PROTOCOL</th>
+                  <th className="p-4 text-cyan-400 text-center">TIME TAKEN</th>
                   <th className="p-4 text-cyan-400 text-center">DATE</th>
                 </tr>
               </thead>
@@ -105,6 +105,7 @@ function Leaderboard() {
                         {s.difficulty}
                       </span>
                     </td>
+                    <td className="p-4 text-center text-green-400 font-semibold">{s.timeToFinish}s</td>
                     <td className="p-4 text-center text-white">{s.product}</td>
                     <td className="p-4 text-center text-gray-400">
                       {new Date(s.date).toLocaleDateString()}
@@ -118,8 +119,8 @@ function Leaderboard() {
 
         {scores.length === 0 && (
           <div className="text-center mt-8 text-gray-400">
-            No mission data available. Complete a synthesis protocol to appear on the leaderboard.
-          </div>
+            No data available.
+                      </div>
         )}
       </div>
 

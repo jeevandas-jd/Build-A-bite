@@ -1,3 +1,4 @@
+// src/utils/sound.js
 const clickAudio = new Audio(require('./sounds/click2.wav'));
 
 // Confirm the sound is loaded

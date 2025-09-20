@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { playClickSound } from "../utils/soundEffects";
 const DifficultySelector = ({ productId, onClose }) => {
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [selectedDisplayLevel, setSelectedDisplayLevel] = useState(null);
@@ -90,7 +91,7 @@ const DifficultySelector = ({ productId, onClose }) => {
           {!selectedLevel && (
             <div className="flex flex-col gap-4">
               <button
-                onClick={() => handleSelect("Flavor Philosopher")}
+              onClick={() => {playClickSound(); handleSelect("Flavor Philosopher")}}
                 className="group relative w-full py-3 px-4 rounded-xl font-bold text-cyan-200 border border-cyan-400/40 bg-gray-800/60 hover:bg-cyan-400/20 hover:text-cyan-100 transition-all duration-300 shadow-lg overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -101,7 +102,7 @@ const DifficultySelector = ({ productId, onClose }) => {
               </button>
 
               <button
-                onClick={() => handleSelect("Elite Class")}
+                onClick={() => {playClickSound(); handleSelect("Elite Class")}}
                 className="group relative w-full py-3 px-4 rounded-xl font-bold text-yellow-200 border border-yellow-400/40 bg-gray-800/60 hover:bg-yellow-400/20 hover:text-yellow-100 transition-all duration-300 shadow-lg overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -112,7 +113,7 @@ const DifficultySelector = ({ productId, onClose }) => {
               </button>
 
               <button
-                onClick={() => handleSelect("Recall Rush")}
+                onClick={() => {playClickSound(); handleSelect("Recall Rush")}}
                 className="group relative w-full py-3 px-4 rounded-xl font-bold text-red-200 border border-red-400/40 bg-gray-800/60 hover:bg-red-400/20 hover:text-red-100 transition-all duration-300 shadow-lg overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-red-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

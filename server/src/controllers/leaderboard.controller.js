@@ -16,7 +16,7 @@ exports.getLeaderboard = async (req, res) => {
 // POST /api/leaderboard
 exports.submitScore = async (req, res) => {
   try {
-    const { score, difficulty, product, sessionId } = req.body;
+    const { score, difficulty, product,accuracy, sessionId } = req.body;
     if (score == null || !difficulty || !product) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -26,6 +26,7 @@ exports.submitScore = async (req, res) => {
       player: req.user.id,
       gameSession: sessionId,
       score,
+      accuracy,
       difficulty,
       productName,
       date: new Date(),

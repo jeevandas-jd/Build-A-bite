@@ -27,6 +27,17 @@ exports.getProduct = async (req, res) => {
 };
 // -------------------------for admin only-------------------------
 
+exports.deleteAllProducts = async (req, res) => {
+  if (false) {
+    return res.status(403).json({ error: 'Admin only' });
+  }
+  try {
+    await Product.deleteMany({});
+    res.json({ message: 'All products deleted' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
 
 exports.createProduct = async (req, res) => {
   if (false) {

@@ -7,8 +7,9 @@ const scoreSchema = new Schema({
   gameSession: { type: Schema.Types.ObjectId, ref: 'GameSession' },
   product: { type: String },
   score: { type: Number, required: true },
+  accuracy: { type: Number },  // percentage
   difficulty: { type: String, enum: ['beginner', 'intermediate', 'expert'] },
-  timeToFinish: { type: Number }, // in seconds
+  timeToFinish: { type: Number },  // in seconds
   date: { type: Date, default: Date.now }
 });
 

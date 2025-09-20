@@ -10,17 +10,22 @@ function Products() {
   const [showModal, setShowModal] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [error, setError] = useState('');
-  const [newStep, setNewStep] = useState('');
+  const [newStep, setNewStep] = useState({});
   const [draggedItem, setDraggedItem] = useState(null);
   const navigate = useNavigate();
+  const [editingItem, setEditingItem] = useState({ field: null, index: null, value: null });
+  const [activeTab, setActiveTab] = useState('available'); // 'available' or 'buffer'
 
   const emptyProduct = {
     name: '',
     description: '',
     image: '',
     availableIngredients: [],
+    bufferIngredients: [],
     availableProcesses: [],
+    bufferProcesses: [],
     availableEquipment: [],
+    bufferEquipment: [],
     correctOrder: []
   };
 
@@ -34,19 +39,20 @@ function Products() {
   const fetchProducts = () => {
     axiosClient.get('/products')
       .then(async res => {
-        // Fetch full details for each product
         const productsWithDetails = [];
         for (let i = 0; i < res.data.length; i++) {
           const productData = await axiosClient.get(`/products/${res.data[i]._id}`);
           productsWithDetails.push(productData.data);
         }
 
-        // Normalize arrays properly
         const productsFixed = productsWithDetails.map(p => ({
           ...p,
           availableIngredients: Array.isArray(p.availableIngredients) ? p.availableIngredients : [],
           availableProcesses: Array.isArray(p.availableProcesses) ? p.availableProcesses : [],
           availableEquipment: Array.isArray(p.availableEquipment) ? p.availableEquipment : [],
+          bufferEquipment: Array.isArray(p.bufferEquipment) ? p.bufferEquipment : [],
+          bufferProcesses: Array.isArray(p.bufferProcesses) ? p.bufferProcesses : [],
+          bufferIngredients: Array.isArray(p.bufferIngredients) ? p.bufferIngredients : [],
           correctOrder: Array.isArray(p.correctOrder) ? p.correctOrder : [],
         }));
 
@@ -77,7 +83,6 @@ function Products() {
   const handleOpenModal = (product = null) => {
     setCurrentProduct(product);
     if (product) {
-      // Deep clone the product to avoid reference issues
       setFormData({
         name: product.name || '',
         description: product.description || '',
@@ -85,6 +90,9 @@ function Products() {
         availableIngredients: [...(product.availableIngredients || [])],
         availableProcesses: [...(product.availableProcesses || [])],
         availableEquipment: [...(product.availableEquipment || [])],
+        bufferIngredients: [...(product.bufferIngredients || [])],
+        bufferProcesses: [...(product.bufferProcesses || [])],
+        bufferEquipment: [...(product.bufferEquipment || [])],
         correctOrder: [...(product.correctOrder || [])]
       });
     } else {
@@ -92,7 +100,8 @@ function Products() {
     }
     setShowModal(true);
     setError('');
-    setNewStep('');
+    setNewStep({});
+    setActiveTab('available');
   };
 
   const handleCloseModal = () => {
@@ -100,7 +109,8 @@ function Products() {
     setCurrentProduct(null);
     setFormData(emptyProduct);
     setError('');
-    setNewStep('');
+    setNewStep({});
+    setActiveTab('available');
   };
 
   const handleInputChange = (e) => {
@@ -161,11 +171,9 @@ function Products() {
     try {
       let res;
       if (currentProduct) {
-        // Update existing product
         res = await axiosClient.put(`/products/${currentProduct._id}`, formData);
         setProducts(prev => prev.map(p => p._id === res.data._id ? res.data : p));
       } else {
-        // Create new product
         res = await axiosClient.post('/products', formData);
         setProducts(prev => [...prev, res.data]);
       }
@@ -181,7 +189,6 @@ function Products() {
     
     try {
       await axiosClient.delete(`/products/${product._id}`);
-      // Remove the product from the local state
       setProducts(prev => prev.filter(p => p._id !== product._id));
     } catch (err) {
       alert(err.response?.data?.error || "Failed to delete product");
@@ -193,9 +200,96 @@ function Products() {
     return Array.isArray(arr) ? arr.map(item => item.name || item).join(', ') : '';
   };
 
-  const renderStepList = (field, title) => (
-    <div className="mb-4">
+  const handleItemClick = (field, index, item) => {
+    setEditingItem({ field, index, value: { ...item } });
+  };
+
+  const handleEditChange = (e, field) => {
+    const { name, value } = e.target;
+    setEditingItem(prev => ({
+      ...prev,
+      value: {
+        ...prev.value,
+        [name]: value
+      }
+    }));
+  };
+
+  const saveEdit = () => {
+    if (editingItem.field !== null && editingItem.index !== null) {
+      const updatedItems = [...formData[editingItem.field]];
+      updatedItems[editingItem.index] = editingItem.value;
+      
+      setFormData(prev => ({
+        ...prev,
+        [editingItem.field]: updatedItems
+      }));
+      
+      setEditingItem({ field: null, index: null, value: null });
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingItem({ field: null, index: null, value: null });
+  };
+
+  // Function to move items between available and buffer arrays
+  const moveItemToBuffer = (sourceField, targetField, index) => {
+    const sourceItems = [...formData[sourceField]];
+    const targetItems = [...formData[targetField]];
+    
+    const [movedItem] = sourceItems.splice(index, 1);
+    targetItems.push(movedItem);
+    
+    setFormData(prev => ({
+      ...prev,
+      [sourceField]: sourceItems,
+      [targetField]: targetItems
+    }));
+  };
+
+  const moveItemToAvailable = (sourceField, targetField, index) => {
+    const sourceItems = [...formData[sourceField]];
+    const targetItems = [...formData[targetField]];
+    
+    const [movedItem] = sourceItems.splice(index, 1);
+    targetItems.push(movedItem);
+    
+    setFormData(prev => ({
+      ...prev,
+      [sourceField]: sourceItems,
+      [targetField]: targetItems
+    }));
+  };
+
+  const renderStepList = (field, bufferField, title) => (
+    <div className="mb-6">
       <label className="block text-cyan-400 mb-2">{title}</label>
+      
+      {/* Tab Navigation */}
+      <div className="flex mb-4 border-b border-cyan-400/30">
+        <button
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === 'available' 
+              ? 'text-cyan-400 border-b-2 border-cyan-400' 
+              : 'text-gray-400 hover:text-cyan-300'
+          }`}
+          onClick={() => setActiveTab('available')}
+        >
+          Available
+        </button>
+        <button
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === 'buffer' 
+              ? 'text-purple-400 border-b-2 border-purple-400' 
+              : 'text-gray-400 hover:text-purple-300'
+          }`}
+          onClick={() => setActiveTab('buffer')}
+        >
+          Buffer
+        </button>
+      </div>
+
       <div className="flex mb-2 gap-2">
         <input
           type="text"
@@ -213,42 +307,150 @@ function Products() {
         />
         <button
           type="button"
-          onClick={() => handleAddStep(field)}
+          onClick={() => handleAddStep(activeTab === 'available' ? field : bufferField)}
           className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 rounded-r-xl transition-colors"
         >
           Add
         </button>
       </div>
 
-      <div className="bg-gray-700/50 rounded-xl p-3 min-h-20 max-h-40 overflow-y-auto">
-        {formData[field].length === 0 ? (
-          <p className="text-gray-400 text-center py-4">No items added yet</p>
-        ) : (
-          formData[field].map((step, index) => (
-            <div
-              key={index}
-              draggable
-              onDragStart={(e) => handleDragStart(e, field, index)}
-              onDragOver={(e) => handleDragOver(e, field, index)}
-              onDrop={(e) => handleDrop(e, field, index)}
-              className="flex items-center justify-between bg-gray-600/50 p-2 rounded-lg mb-2 cursor-move hover:bg-gray-500/50 transition-colors"
+      {/* Editing Input Box */}
+      {editingItem.field === field && editingItem.index !== null && (
+        <div className="bg-cyan-900/30 border border-cyan-400/50 rounded-xl p-3 mb-3">
+          <div className="flex gap-2 mb-2">
+            <input
+              type="text"
+              name="name"
+              value={editingItem.value.name || ''}
+              onChange={(e) => handleEditChange(e, field)}
+              className="flex-grow p-2 rounded-xl border border-cyan-400/30 bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              placeholder="Name"
+            />
+            <input
+              type="text"
+              name="description"
+              value={editingItem.value.description || ''}
+              onChange={(e) => handleEditChange(e, field)}
+              className="flex-grow p-2 rounded-xl border border-cyan-400/30 bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              placeholder="Description"
+            />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={cancelEdit}
+              className="px-3 py-1 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
             >
-              <div>
-                <span className="text-cyan-400 mr-2">↕</span>
-                <span className="font-bold">{step.name}</span>
-                {step.description && <span className="text-gray-300 ml-2">- {step.description}</span>}
-              </div>
-              <button
-                type="button"
-                onClick={() => handleRemoveStep(field, index)}
-                className="text-red-400 hover:text-red-300 transition-colors"
+              Cancel
+            </button>
+            <button
+              onClick={saveEdit}
+              className="px-3 py-1 rounded-lg bg-green-600 hover:bg-green-500 transition-colors"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Available Items */}
+      {activeTab === 'available' && (
+        <div className="bg-gray-700/50 rounded-xl p-3 min-h-20 max-h-40 overflow-y-auto">
+          {formData[field].length === 0 ? (
+            <p className="text-gray-400 text-center py-4">No items added yet</p>
+          ) : (
+            formData[field].map((step, index) => (
+              <div
+                key={index}
+                draggable
+                onDragStart={(e) => handleDragStart(e, field, index)}
+                onDragOver={(e) => handleDragOver(e, field, index)}
+                onDrop={(e) => handleDrop(e, field, index)}
+                onClick={() => handleItemClick(field, index, step)}
+                className={`flex items-center justify-between p-2 rounded-lg mb-2 cursor-move transition-colors ${
+                  editingItem.field === field && editingItem.index === index 
+                    ? 'bg-cyan-600/50 border border-cyan-400/50' 
+                    : 'bg-gray-600/50 hover:bg-gray-500/50'
+                }`}
               >
-                ×
-              </button>
-            </div>
-          ))
-        )}
-      </div>
+                <div>
+                  <span className="text-cyan-400 mr-2">↕</span>
+                  <span className="font-bold">{step.name}</span>
+                  {step.description && <span className="text-gray-300 ml-2">- {step.description}</span>}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      moveItemToBuffer(field, bufferField, index);
+                    }}
+                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                    title="Move to Buffer"
+                  >
+                    ➤
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveStep(field, index);
+                    }}
+                    className="text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Buffer Items */}
+      {activeTab === 'buffer' && (
+        <div className="bg-purple-700/30 rounded-xl p-3 min-h-20 max-h-40 overflow-y-auto">
+          {formData[bufferField].length === 0 ? (
+            <p className="text-gray-400 text-center py-4">No buffer items added yet</p>
+          ) : (
+            formData[bufferField].map((step, index) => (
+              <div
+                key={index}
+                onClick={() => handleItemClick(bufferField, index, step)}
+                className={`flex items-center justify-between p-2 rounded-lg mb-2 transition-colors ${
+                  editingItem.field === bufferField && editingItem.index === index 
+                    ? 'bg-purple-600/50 border border-purple-400/50' 
+                    : 'bg-purple-600/30 hover:bg-purple-500/30'
+                }`}
+              >
+                <div>
+                  <span className="text-purple-400 mr-2">ⓑ</span>
+                  <span className="font-bold">{step.name}</span>
+                  {step.description && <span className="text-gray-300 ml-2">- {step.description}</span>}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      moveItemToAvailable(bufferField, field, index);
+                    }}
+                    className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                    title="Move to Available"
+                  >
+                    ↶
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveStep(bufferField, index);
+                    }}
+                    className="text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -321,6 +523,7 @@ function Products() {
                     <p><span className="text-cyan-400">Ingredients:</span> {arrayToString(product.availableIngredients)}</p>
                     <p><span className="text-purple-400">Processes:</span> {arrayToString(product.availableProcesses)}</p>
                     <p><span className="text-pink-400">Equipment:</span> {arrayToString(product.availableEquipment)}</p>
+                    <p><span className="text-green-400">Buffer Items:</span> {arrayToString([...product.bufferIngredients, ...product.bufferProcesses, ...product.bufferEquipment])}</p>
                     <p><span className="text-green-400">Correct Order:</span> {arrayToString(product.correctOrder)}</p>
                   </div>
                 </div>
@@ -407,10 +610,10 @@ function Products() {
                   />
                 </div>
                 
-                {renderStepList('availableIngredients', 'Ingredients')}
-                {renderStepList('availableProcesses', 'Processes')}
-                {renderStepList('availableEquipment', 'Equipment')}
-                {renderStepList('correctOrder', 'Correct Order (Drag to reorder)')}
+                {renderStepList('availableIngredients', 'bufferIngredients', 'Ingredients')}
+                {renderStepList('availableProcesses', 'bufferProcesses', 'Processes')}
+                {renderStepList('availableEquipment', 'bufferEquipment', 'Equipment')}
+                {renderStepList('correctOrder', 'correctOrder', 'Correct Order (Drag to reorder)')}
 
                 <div className="flex justify-end gap-3 mt-6">
                   <button 

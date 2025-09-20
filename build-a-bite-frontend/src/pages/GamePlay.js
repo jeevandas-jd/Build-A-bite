@@ -3,8 +3,8 @@ import axiosClient from "../api/axiosClient";
 import FarmGuide from "../components/FarmGuid";
 import ScoreCard from "../components/ScoreCard";
 import { useNavigate, useParams } from "react-router-dom";
-import { clickSound, successSound } from "../utils/soundEffects";
-
+//import { clickSound, successSound } from "../utils/soundEffects";
+import { playClickSound } from "../utils/soundEffects";
 function GamePlay() {
   const navigate = useNavigate();
   const { productId, difficulty } = useParams();
@@ -21,13 +21,15 @@ function GamePlay() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const [finalScore, setFinalScore] = useState(null);
+  const [selectedItemDescription, setSelectedItemDescription] = useState("");
 
   const timerId = useRef(null);
 
-  // Sectioned available steps
+  // Sectioned available steps with full objects (name + description)
   const [ingredients, setIngredients] = useState([]);
   const [processes, setProcesses] = useState([]);
   const [equipment, setEquipment] = useState([]);
+  const [bufferItems, setBufferItems] = useState([]);
 
   // Difficulty settings
   const previewDurations = {
@@ -50,7 +52,7 @@ function GamePlay() {
         const product = prodRes.data;
         setProductName(product.name);
 
-        // Server-provided correct order
+        // Server-provided correct order (array of objects with name and description)
         setCorrectOrder(product.correctOrder || []);
 
         // Section pools based on difficulty
@@ -58,19 +60,22 @@ function GamePlay() {
           setIngredients(product.availableIngredients || []);
           setProcesses([]);
           setEquipment([]);
+          setBufferItems(product.bufferIngredients || []);
           setCorrectOrder(product.availableIngredients || []);
         } else if (difficulty === "intermediate") {
           setIngredients(product.availableIngredients || []);
           setProcesses(product.availableProcesses || []);
+          setBufferItems([...product.bufferIngredients, ...product.bufferProcesses] || []);
+          setEquipment([]);
           const correct = product.availableIngredients.concat(
             product.availableProcesses
           );
           setCorrectOrder(correct);
-          setEquipment([]);
         } else {
           setIngredients(product.availableIngredients || []);
           setProcesses(product.availableProcesses || []);
           setEquipment(product.availableEquipment || []);
+          setBufferItems([...product.bufferIngredients, ...product.bufferProcesses, ...product.bufferEquipment] || []);
           const correct = product.availableIngredients.concat(
             product.availableProcesses,
             product.availableEquipment
@@ -112,6 +117,23 @@ function GamePlay() {
         setProcesses((prev) => [...prev].sort(() => Math.random() - 0.5));
         setEquipment((prev) => [...prev].sort(() => Math.random() - 0.5));
 
+        // Add some buffer items randomly to the available items
+        const allBufferItems = [...bufferItems];
+        const itemsToAdd = Math.min(3, allBufferItems.length); // Add up to 3 buffer items
+        
+        for (let i = 0; i < itemsToAdd; i++) {
+          if (allBufferItems.length > 0) {
+            const randomIndex = Math.floor(Math.random() * allBufferItems.length);
+            const bufferItem = allBufferItems.splice(randomIndex, 1)[0];
+            
+            // Add buffer item to a random category
+            const categories = [setIngredients, setProcesses, setEquipment];
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            
+            randomCategory(prev => [...prev, bufferItem]);
+          }
+        }
+
         setTimeLeft(gameDurations[difficulty]);
         setMessage(`Initialize synthesis of ${productName}! Execute commands in correct sequence.`);
       } else {
@@ -129,15 +151,19 @@ function GamePlay() {
 
   // Step selection
   const handleAddStep = (step) => {
-    if (steps.includes(step)) {
-      setMessage(`Command already executed: ${step}`);
+    if (steps.some(s => s.name === step.name)) {
+      setMessage(`Command already executed: ${step.name}`);
       return;
     }
-    clickSound.play();
+    playClickSound();
     setSteps((prev) => [...prev, step]);
-    setMessage(`Executed: ${step}`);
+    setMessage(`Executed: ${step.name},${step.description ? ' - ' + step.description : ''}`);
+    setSelectedItemDescription(step.description || "No description available");
   };
-
+  const handleRemoveStep = (index) => {
+    setSteps((prev) => prev.filter((_, i) => i !== index));
+    setMessage("Command removed.");
+  }
   // Evaluate game and show ScoreCard
   const evaluateGame = async () => {
     clearInterval(timerId.current);
@@ -145,7 +171,7 @@ function GamePlay() {
     let score = 0;
     const minLen = Math.min(steps.length, correctOrder.length);
     for (let i = 0; i < minLen; i++) {
-      if (steps[i] === correctOrder[i]) score++;
+      if (steps[i].name === correctOrder[i].name) score++;
     }
 
     const accuracy = Math.round((score / correctOrder.length) * 100);
@@ -162,14 +188,15 @@ function GamePlay() {
 
     setFinalScore(result);
     setGameFinished(true);
-    console.log(`score data = ${JSON.stringify(result)}`);
+    
     try {
       await axiosClient.post("/leaderboard", result);
     } catch (err) {
       console.error("Failed to submit score:", err);
     }
 
-    successSound.play();
+   // successSound.play();
+    playClickSound();
     setMessage(
       `🎉 Mission Complete! Synthesis accuracy: ${score}/${correctOrder.length}`
     );
@@ -205,6 +232,8 @@ function GamePlay() {
           sessionId={finalScore.sessionId}
           timeToFinish={finalScore.timeToFinish}
           accuracy={finalScore.accuracy}
+          correctOrder={correctOrder}
+          playerOrder={steps}
         />
       </div>
     );
@@ -250,8 +279,16 @@ function GamePlay() {
           </div>
         </div>
 
-        {/* Farm Guide with AI styling */}
-        <FarmGuide message={message} />
+        {/* Farm Guide with AI styling and item description */}
+        <div className="mb-6">
+          <FarmGuide message={message} />
+          {selectedItemDescription && (
+            <div className="mt-2 bg-gray-800/50 backdrop-blur-md border border-cyan-400/20 rounded-xl p-3">
+              <div className="text-sm text-cyan-300 font-semibold">Item Description:</div>
+              <div className="text-gray-300 text-sm">{selectedItemDescription}</div>
+            </div>
+          )}
+        </div>
 
         {previewing ? (
           <div className="bg-gray-800/70 backdrop-blur-xl border border-yellow-400/40 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
@@ -267,7 +304,12 @@ function GamePlay() {
                     <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center font-bold text-gray-900">
                       {idx + 1}
                     </div>
-                    <div className="text-white font-semibold">{step}</div>
+                    <div>
+                      <div className="text-white font-semibold">{step.name}</div>
+                      {step.description && (
+                        <div className="text-gray-400 text-sm mt-1">{step.description}</div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -327,8 +369,22 @@ function GamePlay() {
                       <div key={idx} className="flex items-center gap-3 bg-gray-700/50 rounded-lg p-3 border border-green-400/20 animate-step-appear">
                         <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-cyan-400 rounded-full flex items-center justify-center font-bold text-gray-900 text-sm">
                           {idx + 1}
+
                         </div>
-                        <div className="text-white font-semibold">{step}</div>
+                                                  <div>
+                            <button
+                              onClick={() => handleRemoveStep(idx)}
+                              className="ml-2 text-red-400 hover:text-red-600 transition"
+                            >
+                              ✖
+                            </button>
+                          </div>
+                        <div>
+                          <div className="text-white font-semibold">{step.name}</div>
+                          {step.description && (
+                            <div className="text-gray-400 text-sm mt-1">{step.description}</div>
+                          )}
+                        </div>
                         <div className="ml-auto text-green-400">✓</div>
                       </div>
                     ))
@@ -459,15 +515,15 @@ const Section = ({ title, steps, stepsChosen, handleAddStep, timeLeft, color, ic
             [{steps.length} Available]
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {steps.map((step, index) => {
-            const isDisabled = stepsChosen.includes(step) || timeLeft <= 0;
+            const isDisabled = stepsChosen.some(s => s.name === step.name) || timeLeft <= 0;
             return (
               <button
-                key={step}
+                key={step.name}
                 onClick={() => handleAddStep(step)}
                 disabled={isDisabled}
-                className={`p-3 rounded-xl shadow-lg transition-all duration-300 transform border font-bold text-sm relative overflow-hidden ${
+                className={`p-3 rounded-xl shadow-lg transition-all duration-300 transform border font-bold text-sm relative overflow-hidden text-left ${
                   isDisabled
                     ? `${theme.buttonDisabled} text-gray-400 cursor-not-allowed`
                     : `bg-gradient-to-r ${theme.button} text-white hover:scale-105 border-transparent hover:shadow-lg`
@@ -477,9 +533,14 @@ const Section = ({ title, steps, stepsChosen, handleAddStep, timeLeft, color, ic
                 {!isDisabled && (
                   <div className={`absolute inset-0 bg-gradient-to-r ${theme.bg} blur-lg`}></div>
                 )}
-                <div className="relative flex items-center justify-center">
-                  {isDisabled && <span className="mr-1">✓</span>}
-                  <span>{step}</span>
+                <div className="relative">
+                  <div className="flex items-center">
+                    {isDisabled && <span className="mr-1">✓</span>}
+                    <span className="font-semibold">{step.name}</span>
+                  </div>
+                  {step.description && (
+                    <div className="text-xs font-normal mt-1 opacity-80">{step.description}</div>
+                  )}
                 </div>
               </button>
             );
@@ -498,4 +559,4 @@ const Section = ({ title, steps, stepsChosen, handleAddStep, timeLeft, color, ic
   );
 };
 
-export default GamePlay;
+export default GamePlay;  
