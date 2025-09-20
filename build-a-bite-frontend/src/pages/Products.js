@@ -16,6 +16,7 @@ function Products() {
 
   const emptyProduct = {
     name: '',
+    description: '',
     image: '',
     availableIngredients: [],
     availableProcesses: [],
@@ -30,33 +31,33 @@ function Products() {
     fetchUser();
   }, []);
 
-const fetchProducts = () => {
-  axiosClient.get('/products')
-    .then(async res => {
-      // Fetch full details for each product
-      const productsWithDetails = [];
-      for (let i = 0; i < res.data.length; i++) {
-        const productData = await axiosClient.get(`/products/${res.data[i]._id}`);
-        productsWithDetails.push(productData.data);
-      }
+  const fetchProducts = () => {
+    axiosClient.get('/products')
+      .then(async res => {
+        // Fetch full details for each product
+        const productsWithDetails = [];
+        for (let i = 0; i < res.data.length; i++) {
+          const productData = await axiosClient.get(`/products/${res.data[i]._id}`);
+          productsWithDetails.push(productData.data);
+        }
 
-      // Normalize arrays properly
-      const productsFixed = productsWithDetails.map(p => ({
-        ...p,
-        availableIngredients: Array.isArray(p.availableIngredients) ? p.availableIngredients : [],
-        availableProcesses: Array.isArray(p.availableProcesses) ? p.availableProcesses : [],
-        availableEquipment: Array.isArray(p.availableEquipment) ? p.availableEquipment : [],
-        correctOrder: Array.isArray(p.correctOrder) ? p.correctOrder : [],
-      }));
+        // Normalize arrays properly
+        const productsFixed = productsWithDetails.map(p => ({
+          ...p,
+          availableIngredients: Array.isArray(p.availableIngredients) ? p.availableIngredients : [],
+          availableProcesses: Array.isArray(p.availableProcesses) ? p.availableProcesses : [],
+          availableEquipment: Array.isArray(p.availableEquipment) ? p.availableEquipment : [],
+          correctOrder: Array.isArray(p.correctOrder) ? p.correctOrder : [],
+        }));
 
-      setProducts(productsFixed);
-      setLoading(false);
-    })
-    .catch(() => {
-      setProducts([]);
-      setLoading(false);
-    });
-};
+        setProducts(productsFixed);
+        setLoading(false);
+      })
+      .catch(() => {
+        setProducts([]);
+        setLoading(false);
+      });
+  };
 
   const fetchUser = () => {
     axiosClient.get('/auth/me')
@@ -79,6 +80,7 @@ const fetchProducts = () => {
       // Deep clone the product to avoid reference issues
       setFormData({
         name: product.name || '',
+        description: product.description || '',
         image: product.image || '',
         availableIngredients: [...(product.availableIngredients || [])],
         availableProcesses: [...(product.availableProcesses || [])],
@@ -110,13 +112,13 @@ const fetchProducts = () => {
   };
 
   const handleAddStep = (field) => {
-    if (!newStep.trim()) return;
-    
+    if (!newStep.name?.trim()) return;
+
     setFormData(prev => ({
       ...prev,
-      [field]: [...prev[field], newStep.trim()]
+      [field]: [...prev[field], { name: newStep.name.trim(), description: newStep.description?.trim() || '' }]
     }));
-    setNewStep('');
+    setNewStep({});
   };
 
   const handleRemoveStep = (field, index) => {
@@ -188,20 +190,26 @@ const fetchProducts = () => {
   };
 
   const arrayToString = (arr) => {
-    return Array.isArray(arr) ? arr.join(', ') : '';
+    return Array.isArray(arr) ? arr.map(item => item.name || item).join(', ') : '';
   };
 
   const renderStepList = (field, title) => (
     <div className="mb-4">
       <label className="block text-cyan-400 mb-2">{title}</label>
-      <div className="flex mb-2">
+      <div className="flex mb-2 gap-2">
         <input
           type="text"
-          value={newStep}
-          onChange={(e) => setNewStep(e.target.value)}
+          value={newStep.name || ''}
+          onChange={(e) => setNewStep(prev => ({ ...prev, name: e.target.value }))}
           className="flex-grow p-2 rounded-l-xl border border-cyan-400/30 bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-          placeholder={`Add new ${field.toLowerCase().replace('available', '')}`}
-          onKeyPress={(e) => e.key === 'Enter' && handleAddStep(field)}
+          placeholder={`Name`}
+        />
+        <input
+          type="text"
+          value={newStep.description || ''}
+          onChange={(e) => setNewStep(prev => ({ ...prev, description: e.target.value }))}
+          className="flex-grow p-2 border-t border-b border-cyan-400/30 bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+          placeholder="Description"
         />
         <button
           type="button"
@@ -211,7 +219,7 @@ const fetchProducts = () => {
           Add
         </button>
       </div>
-      
+
       <div className="bg-gray-700/50 rounded-xl p-3 min-h-20 max-h-40 overflow-y-auto">
         {formData[field].length === 0 ? (
           <p className="text-gray-400 text-center py-4">No items added yet</p>
@@ -225,10 +233,11 @@ const fetchProducts = () => {
               onDrop={(e) => handleDrop(e, field, index)}
               className="flex items-center justify-between bg-gray-600/50 p-2 rounded-lg mb-2 cursor-move hover:bg-gray-500/50 transition-colors"
             >
-              <span className="flex items-center">
+              <div>
                 <span className="text-cyan-400 mr-2">↕</span>
-                {step}
-              </span>
+                <span className="font-bold">{step.name}</span>
+                {step.description && <span className="text-gray-300 ml-2">- {step.description}</span>}
+              </div>
               <button
                 type="button"
                 onClick={() => handleRemoveStep(field, index)}
@@ -245,23 +254,30 @@ const fetchProducts = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 p-6 font-mono relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+      <div className="absolute top-0 left-0 w-72 h-72 bg-cyan-500/10 rounded-full filter blur-3xl animate-pulse-slow"></div>
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-500/10 rounded-full filter blur-3xl animate-pulse-slow delay-1000"></div>
 
       <div className="relative z-10">
-        <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-6 text-center">
+        <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-6 text-center animate-title-glow">
           AVAILABLE PRODUCTS
         </h2>
-{user?.isAdmin ? (
-  <FarmGuide message="Hello admin, this is your place to perform create, update, and delete operations on the products database." />
-) : (
-  <FarmGuide message="Explore all products and build what you want. Admin users can manage products." />
-)}
+        
+        {user?.isAdmin ? (
+          <FarmGuide message="Hello admin, this is your place to perform create, update, and delete operations on the products database." />
+        ) : (
+          <FarmGuide message="Explore all products and build what you want. Admin users can manage products." />
+        )}
+        
         {user?.isAdmin && (
           <div className="flex justify-end mb-4">
             <button
               onClick={() => handleOpenModal()}
-              className="bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white px-5 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white px-5 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg group relative overflow-hidden"
             >
-              + Add New Product
+              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <span className="relative">+ Add New Product</span>
             </button>
           </div>
         )}
@@ -275,13 +291,10 @@ const fetchProducts = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
             {products.map(product => (
-              
               <div 
                 key={product._id}
-                
                 className="bg-gray-800/60 backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-5 shadow-lg hover:shadow-cyan-400/20 hover:scale-105 transition-all duration-300 group relative overflow-hidden"
               >
-                
                 <div className="absolute top-4 right-4 bg-cyan-400/20 text-cyan-400 text-xs px-2 py-1 rounded-full uppercase font-bold">
                   ID: {product._id.slice(-4)}
                 </div>
@@ -297,6 +310,12 @@ const fetchProducts = () => {
                   <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
                     {product.name}
                   </h3>
+                  
+                  {product.description && (
+                    <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+                      {product.description}
+                    </p>
+                  )}
 
                   <div className="text-gray-400 text-sm space-y-1 mb-3">
                     <p><span className="text-cyan-400">Ingredients:</span> {arrayToString(product.availableIngredients)}</p>
@@ -306,31 +325,28 @@ const fetchProducts = () => {
                   </div>
                 </div>
 
-              {user?.isAdmin && (
-                <div className="flex gap-2 mt-4 justify-center">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log('Editing product:', product);
-                    setFormData(product);
-                    handleOpenModal(product);   // pass product directly, not formData (which may be stale)
-                  }}
-                  className="cursor-pointer bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  Edit
-                </button>
-                  <button
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      handleDeleteProduct(product); 
-                    }}
-                    className="cursor-pointer bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-
+                {user?.isAdmin && (
+                  <div className="flex gap-2 mt-4 justify-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenModal(product);
+                      }}
+                      className="cursor-pointer bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg transition-colors shadow-md"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        handleDeleteProduct(product); 
+                      }}
+                      className="cursor-pointer bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg transition-colors shadow-md"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -339,67 +355,126 @@ const fetchProducts = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto text-white font-mono">
-            <h2 className="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
-              {currentProduct ? `EDIT PRODUCT: ${currentProduct.name}` : 'CREATE NEW PRODUCT'}
-            </h2>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-gray-800 backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto text-white font-mono relative">
+            {/* Modal glow effect */}
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/10 via-purple-400/10 to-pink-400/10 opacity-30 blur-xl"></div>
             
-            {error && (
-              <div className="bg-red-500/20 border border-red-400 text-red-300 p-3 mb-4 rounded-xl">
-                <p className="font-bold">{error}</p>
-              </div>
-            )}
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-cyan-400 mb-1">Product Name</label>
-                <input 
-                  type="text" 
-                  name="name" 
-                  value={formData.name} 
-                  onChange={handleInputChange} 
-                  className="w-full p-3 rounded-xl border border-cyan-400/30 bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                  placeholder="Enter product name"
-                />
-              </div>
+            <div className="relative">
+              <h2 className="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+                {currentProduct ? `EDIT PRODUCT: ${currentProduct.name}` : 'CREATE NEW PRODUCT'}
+              </h2>
               
-              <div>
-                <label className="block text-cyan-400 mb-1">Image URL</label>
-                <input 
-                  type="text" 
-                  name="image" 
-                  value={formData.image} 
-                  onChange={handleInputChange} 
-                  className="w-full p-3 rounded-xl border border-cyan-400/30 bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                  placeholder="Enter image URL"
-                />
-              </div>
+              {error && (
+                <div className="bg-red-500/20 border border-red-400 text-red-300 p-3 mb-4 rounded-xl">
+                  <p className="font-bold">{error}</p>
+                </div>
+              )}
               
-              {renderStepList('availableIngredients', 'Ingredients')}
-              {renderStepList('availableProcesses', 'Processes')}
-              {renderStepList('availableEquipment', 'Equipment')}
-              {renderStepList('correctOrder', 'Correct Order (Drag to reorder)')}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-cyan-400 mb-1">Product Name</label>
+                  <input 
+                    type="text" 
+                    name="name" 
+                    value={formData.name} 
+                    onChange={handleInputChange} 
+                    className="w-full p-3 rounded-xl border border-cyan-400/30 bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    placeholder="Enter product name"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-cyan-400 mb-1">Product Description</label>
+                  <textarea 
+                    name="description" 
+                    value={formData.description} 
+                    onChange={handleInputChange} 
+                    className="w-full p-3 rounded-xl border border-cyan-400/30 bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400 min-h-[100px]"
+                    placeholder="Enter product description"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-cyan-400 mb-1">Image URL</label>
+                  <input 
+                    type="text" 
+                    name="image" 
+                    value={formData.image} 
+                    onChange={handleInputChange} 
+                    className="w-full p-3 rounded-xl border border-cyan-400/30 bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    placeholder="Enter image URL"
+                  />
+                </div>
+                
+                {renderStepList('availableIngredients', 'Ingredients')}
+                {renderStepList('availableProcesses', 'Processes')}
+                {renderStepList('availableEquipment', 'Equipment')}
+                {renderStepList('correctOrder', 'Correct Order (Drag to reorder)')}
 
-              <div className="flex justify-end gap-3 mt-6">
-                <button 
-                  onClick={handleCloseModal} 
-                  className="px-5 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleSubmit} 
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 transition-colors"
-                >
-                  {currentProduct ? 'Update' : 'Create'}
-                </button>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button 
+                    onClick={handleCloseModal} 
+                    className="px-5 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleSubmit} 
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 transition-colors"
+                  >
+                    {currentProduct ? 'Update' : 'Create'}
+                  </button>
+                </div>
               </div>
             </div>
+            
+            <button 
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-600/60 transition-all duration-200"
+              aria-label="Close"
+            >
+              ✖
+            </button>
           </div>
         </div>
       )}
 
+      {/* Animations */}
+      <style>{`
+        @keyframes fade-in { 
+          from { opacity: 0; transform: scale(0.95) translateY(10px); } 
+          to { opacity: 1; transform: scale(1) translateY(0); } 
+        }
+        
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.5; }
+        }
+        
+        @keyframes title-glow {
+          0%, 100% { text-shadow: 0 0 10px rgba(34, 211, 238, 0.4), 0 0 20px rgba(147, 51, 234, 0.3); }
+          50% { text-shadow: 0 0 15px rgba(34, 211, 238, 0.6), 0 0 30px rgba(147, 51, 234, 0.5); }
+        }
+        
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+        .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
+        .animate-title-glow { animation: title-glow 3s ease-in-out infinite; }
+        
+        .bg-grid-pattern {
+          background-image: 
+            linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+          background-size: 20px 20px;
+        }
+        
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </div>
   );
 }

@@ -139,6 +139,16 @@ function Navbar() {
             )
 
           }
+{isAdmin && (
+  <button
+    onClick={() => navigate("/create-guest")}
+    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-bold px-4 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-blue-400/30 active:scale-95 flex items-center gap-2 relative overflow-hidden"
+  >
+    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-indigo-400/20 blur-lg"></div>
+    <span className="relative">👤</span>
+    <span className="hidden md:inline relative font-semibold">CREATE GUEST</span>
+  </button>
+)}
 
             <button
               onClick={handleLogout}
