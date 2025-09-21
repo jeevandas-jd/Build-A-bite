@@ -51,34 +51,6 @@ function GamePlay() {
     expert: 95,
   };
 
-
-  const playGameSong = () => {
-  // Stop any existing song first
-  stopGameSong();
-  
-  // Create and play new game song
-  const newGameSong = new Audio(require('../utils/sounds/gameplay.ogg'));
-  newGameSong.loop = true;
-  newGameSong.volume = 0.7; // Adjust volume as needed
-  
-  newGameSong.play()
-    .then(() => {
-      setGameSong(newGameSong);
-      setIsGameSongPlaying(true);
-    })
-    .catch(error => {
-      console.error("Failed to play game song:", error);
-    });
-};
-
-const stopGameSong = () => {
-  if (gameSong) {
-    gameSong.pause();
-    gameSong.currentTime = 0;
-    setIsGameSongPlaying(false);
-  }
-};
-
   // Fetch product + setup game
   useEffect(() => {
     async function startSession() {
@@ -155,7 +127,11 @@ useEffect(() => {
         previewSong();
         setPreviewPlayed(true)
       }
-      else playGameSong()
+      else if (!isGameSongPlaying){
+        playGameSong(true);
+        setIsGameSongPlaying(true);{
+        
+      } }
       ;
       // End preview → shuffle categories and start game
       setPreviewing(false);
@@ -191,6 +167,7 @@ useEffect(() => {
       setTimeLeft(gameDurations[difficulty]);
       setMessage(`Initialize synthesis of ${productName}! Execute commands in correct sequence.`);
     } else {
+     
       evaluateGame();
     }
     return;
@@ -225,6 +202,8 @@ useEffect(() => {
   }
   // Evaluate game and show ScoreCard
   const evaluateGame = async () => {
+    setIsGameSongPlaying(false);
+    playGameSong(false);
     clearInterval(timerId.current);
 
     let score = 0;

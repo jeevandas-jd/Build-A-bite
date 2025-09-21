@@ -42,7 +42,36 @@ gameSong.addEventListener('canplaythrough', () => {
   console.log('Game sound loaded and ready!');
 }, { once: true });
 
-export const playGameSong = () => {
-  gameSong.currentTime = 0; // rewind
+export const playGameSong = (flag) => {
+  if (!flag) {
+    // Smooth fade out
+    let fadeOut = setInterval(() => {
+      if (gameSong.volume > 0.05) {
+        gameSong.volume = Math.max(0, gameSong.volume - 0.05);
+      } else {
+        clearInterval(fadeOut);
+        gameSong.pause();
+        gameSong.currentTime = 0;
+        gameSong.volume = 1; // reset for next play
+      }
+    }, 100); // decrease every 100ms
+    return;
+  }
+
+  // Play from start with normal volume
+  gameSong.currentTime = 0;
+  gameSong.volume = 1;
   gameSong.play();
-}
+};
+
+export const ScoreCardSound = new Audio(require('./sounds/scoreCard.mp3'));
+
+// Confirm the sound is loaded
+ScoreCardSound.addEventListener('canplaythrough', () => {
+  console.log('ScoreCard sound loaded and ready!');
+}, { once: true });
+
+export const playScoreCardSound = () => {
+  ScoreCardSound.currentTime = 0; // rewind
+  ScoreCardSound.play();
+};

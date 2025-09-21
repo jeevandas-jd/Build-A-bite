@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { useNavigate } from "react-router-dom";
-
+import { playClickSound2,playScoreCardSound} from "../utils/soundEffects";
 function ScoreCard({ score, total, difficulty, productId, sessionId, timeToFinish, accuracy, correctOrder, playerOrder }) {
   const navigate = useNavigate();
   const [showReview, setShowReview] = useState(false);
@@ -22,6 +22,7 @@ function ScoreCard({ score, total, difficulty, productId, sessionId, timeToFinis
   const stars = calculateStars();
 
   useEffect(() => {
+    playScoreCardSound();
     const submitScore = async () => {
       try {
         await axiosClient.post("/leaderboard", {
@@ -95,7 +96,7 @@ function ScoreCard({ score, total, difficulty, productId, sessionId, timeToFinis
       <div className="flex justify-center mb-4 md:mb-6">
         <div className="bg-gray-800/70 backdrop-blur-md rounded-xl p-1 border border-cyan-400/30">
           <button
-            onClick={() => setActiveTab("summary")}
+            onClick={() => { setActiveTab("summary"); playClickSound2(); }}
             className={`px-4 py-2 rounded-lg text-sm md:text-base transition-colors ${
               activeTab === "summary" 
                 ? "bg-cyan-500 text-white" 
@@ -105,7 +106,7 @@ function ScoreCard({ score, total, difficulty, productId, sessionId, timeToFinis
             Summary
           </button>
           <button
-            onClick={() => setActiveTab("review")}
+            onClick={() => {setActiveTab("review"); playClickSound2(); }}
             className={`px-4 py-2 rounded-lg text-sm md:text-base transition-colors ${
               activeTab === "review" 
                 ? "bg-purple-500 text-white" 
@@ -163,7 +164,7 @@ function ScoreCard({ score, total, difficulty, productId, sessionId, timeToFinis
             {/* Action Buttons - Stacked on mobile */}
             <div className="flex flex-col md:flex-row justify-center gap-2 md:gap-4">
               <button
-                onClick={() => navigate("/leaderboard")}
+                onClick={() => {  navigate("/leaderboard"); playClickSound2(); }}
                 className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white font-bold py-2 md:py-3 px-4 md:px-6 rounded-xl transition-all duration-300 transform hover:scale-105 text-sm md:text-base"
               >
                 <span className="mr-1 md:mr-2">🏆</span>
@@ -171,7 +172,7 @@ function ScoreCard({ score, total, difficulty, productId, sessionId, timeToFinis
               </button>
               
               <button
-                onClick={() => setActiveTab("review")}
+                onClick={() => {  setActiveTab("review"); playClickSound2(); }}
                 className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white font-bold py-2 md:py-3 px-4 md:px-6 rounded-xl transition-all duration-300 transform hover:scale-105 text-sm md:text-base"
               >
                 <span className="mr-1 md:mr-2">📝</span>

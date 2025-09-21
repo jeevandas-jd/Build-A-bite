@@ -27,7 +27,7 @@ const [formData, setFormData] = useState(emptyProduct);
 
 
 const fetchProducts=()=>{
-  axiosClient
+  axiosClient.get('/products')
 }
 
 }
