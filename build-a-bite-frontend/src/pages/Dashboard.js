@@ -3,6 +3,7 @@ import axiosClient from "../api/axiosClient";
 import FarmGuide from "../components/FarmGuid";
 import { useNavigate } from "react-router-dom";
 import DifficultySelector from "../components/difficultySelector";
+import { playClickSound2,playClickSound} from "../utils/soundEffects";
 
 function Dashboard() {
   const [user, setUser] = useState(null);
@@ -25,6 +26,7 @@ function Dashboard() {
   }, []);
 
   const handleStartGame = (product) => {
+    playClickSound2();
     setSelectedProduct(product);
   };
 

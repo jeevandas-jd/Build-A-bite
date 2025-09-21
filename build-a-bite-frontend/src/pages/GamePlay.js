@@ -4,7 +4,7 @@ import FarmGuide from "../components/FarmGuid";
 import ScoreCard from "../components/ScoreCard";
 import { useNavigate, useParams } from "react-router-dom";
 //import { clickSound, successSound } from "../utils/soundEffects";
-import { playClickSound } from "../utils/soundEffects";
+import { playClickSound ,previewSong,playGameSong} from "../utils/soundEffects";
 function GamePlay() {
   const navigate = useNavigate();
   const { productId, difficulty } = useParams();
@@ -22,6 +22,9 @@ function GamePlay() {
   const [gameFinished, setGameFinished] = useState(false);
   const [finalScore, setFinalScore] = useState(null);
   const [selectedItemDescription, setSelectedItemDescription] = useState("");
+  const [previewPlayed, setPreviewPlayed] = useState(false);
+  const[isGameSongPlaying,setIsGameSongPlaying]=useState(false);
+  const [gameSong,setGameSong]=useState(null);
 
   const timerId = useRef(null);
 
@@ -29,7 +32,12 @@ function GamePlay() {
   const [ingredients, setIngredients] = useState([]);
   const [processes, setProcesses] = useState([]);
   const [equipment, setEquipment] = useState([]);
+  const [bufferIngredients, setBufferIngredients] = useState([]);
+  const [bufferProcesses, setBufferProcesses] = useState([]);
+  const [bufferEquipment, setBufferEquipment] = useState([]);
   const [bufferItems, setBufferItems] = useState([]);
+
+  //const [previewSong, setPreviewSong] = useState(null);
 
   // Difficulty settings
   const previewDurations = {
@@ -42,6 +50,34 @@ function GamePlay() {
     intermediate: 70,
     expert: 95,
   };
+
+
+  const playGameSong = () => {
+  // Stop any existing song first
+  stopGameSong();
+  
+  // Create and play new game song
+  const newGameSong = new Audio(require('../utils/sounds/gameplay.ogg'));
+  newGameSong.loop = true;
+  newGameSong.volume = 0.7; // Adjust volume as needed
+  
+  newGameSong.play()
+    .then(() => {
+      setGameSong(newGameSong);
+      setIsGameSongPlaying(true);
+    })
+    .catch(error => {
+      console.error("Failed to play game song:", error);
+    });
+};
+
+const stopGameSong = () => {
+  if (gameSong) {
+    gameSong.pause();
+    gameSong.currentTime = 0;
+    setIsGameSongPlaying(false);
+  }
+};
 
   // Fetch product + setup game
   useEffect(() => {
@@ -60,11 +96,15 @@ function GamePlay() {
           setIngredients(product.availableIngredients || []);
           setProcesses([]);
           setEquipment([]);
+          setBufferIngredients(product.bufferIngredients || []);
           setBufferItems(product.bufferIngredients || []);
           setCorrectOrder(product.availableIngredients || []);
         } else if (difficulty === "intermediate") {
           setIngredients(product.availableIngredients || []);
           setProcesses(product.availableProcesses || []);
+          setBufferIngredients(product.bufferIngredients || []);
+          setBufferProcesses(product.bufferProcesses || []);
+
           setBufferItems([...product.bufferIngredients, ...product.bufferProcesses] || []);
           setEquipment([]);
           const correct = product.availableIngredients.concat(
@@ -75,18 +115,18 @@ function GamePlay() {
           setIngredients(product.availableIngredients || []);
           setProcesses(product.availableProcesses || []);
           setEquipment(product.availableEquipment || []);
+          setBufferIngredients(product.bufferIngredients || []);
+          setBufferProcesses(product.bufferProcesses || []);
+          setBufferEquipment(product.bufferEquipment || []);
           setBufferItems([...product.bufferIngredients, ...product.bufferProcesses, ...product.bufferEquipment] || []);
-          const correct = product.availableIngredients.concat(
-            product.availableProcesses,
-            product.availableEquipment
-          );
-          setCorrectOrder(correct);
+
+          setCorrectOrder(product.correctOrder || []);
         }
 
         // Start preview phase
         setPreviewing(true);
         setTimeLeft(previewDurations[difficulty]);
-        setMessage(`Preview the correct synthesis sequence for ${product.name}...`);
+        setMessage(`Preview the correct sequence for ${product.name}...`);
 
         // Create session on server
         const response = await axiosClient.post("/game/start", {
@@ -103,51 +143,70 @@ function GamePlay() {
     startSession();
   }, [productId, difficulty]);
 
+
+
   // Timer logic
-  useEffect(() => {
-    if (timeLeft <= 0) {
-      clearInterval(timerId.current);
+useEffect(() => {
+  if (timeLeft <= 0) {
+    clearInterval(timerId.current);
 
-      if (previewing) {
-        // End preview → shuffle categories and start game
-        setPreviewing(false);
-        setSteps([]);
-
-        setIngredients((prev) => [...prev].sort(() => Math.random() - 0.5));
-        setProcesses((prev) => [...prev].sort(() => Math.random() - 0.5));
-        setEquipment((prev) => [...prev].sort(() => Math.random() - 0.5));
-
-        // Add some buffer items randomly to the available items
-        const allBufferItems = [...bufferItems];
-        const itemsToAdd = Math.min(3, allBufferItems.length); // Add up to 3 buffer items
-        
-        for (let i = 0; i < itemsToAdd; i++) {
-          if (allBufferItems.length > 0) {
-            const randomIndex = Math.floor(Math.random() * allBufferItems.length);
-            const bufferItem = allBufferItems.splice(randomIndex, 1)[0];
-            
-            // Add buffer item to a random category
-            const categories = [setIngredients, setProcesses, setEquipment];
-            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-            
-            randomCategory(prev => [...prev, bufferItem]);
-          }
-        }
-
-        setTimeLeft(gameDurations[difficulty]);
-        setMessage(`Initialize synthesis of ${productName}! Execute commands in correct sequence.`);
-      } else {
-        evaluateGame();
+    if (previewing) {
+      if (!previewPlayed){
+        previewSong();
+        setPreviewPlayed(true)
       }
-      return;
+      else playGameSong()
+      ;
+      // End preview → shuffle categories and start game
+      setPreviewing(false);
+      setSteps([]);
+
+      // Proper Fisher-Yates shuffle algorithm
+      const shuffleArray = (array) => {
+        const newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+      };
+
+      // Function to shuffle and mix buffer items with real items
+      const shuffleAndMixItems = (realItems, bufferItems, maxBufferItems = 3) => {
+        // Take a subset of buffer items (up to maxBufferItems)
+        const selectedBufferItems = shuffleArray(bufferItems)
+          .slice(0, Math.min(maxBufferItems, bufferItems.length));
+        
+        // Combine real items with selected buffer items
+        const allItems = [...realItems, ...selectedBufferItems];
+        // Shuffle the combined array using proper algorithm
+        return shuffleArray(allItems);
+      };
+
+      // Shuffle and mix each category with its corresponding buffer
+      setIngredients(shuffleAndMixItems(ingredients, bufferIngredients, 2));
+      setProcesses(shuffleAndMixItems(processes, bufferProcesses, 3));
+      setEquipment(shuffleAndMixItems(equipment, bufferEquipment, 1));
+
+      setTimeLeft(gameDurations[difficulty]);
+      setMessage(`Initialize synthesis of ${productName}! Execute commands in correct sequence.`);
+    } else {
+      evaluateGame();
     }
+    return;
+  }
 
-    timerId.current = setInterval(() => {
-      setTimeLeft((t) => t - 1);
-    }, 1000);
+  timerId.current = setInterval(() => {
+    setTimeLeft((t) => t - 1);
+  }, 1000);
 
-    return () => clearInterval(timerId.current);
-  }, [timeLeft, previewing]);
+  return () => {
+    clearInterval(timerId.current);
+    
+    
+  };
+}, [timeLeft, previewing]);
+
 
   // Step selection
   const handleAddStep = (step) => {
@@ -291,7 +350,9 @@ function GamePlay() {
         </div>
 
         {previewing ? (
+
           <div className="bg-gray-800/70 backdrop-blur-xl border border-yellow-400/40 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+          
             <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/10 to-orange-400/10 animate-preview-glow"></div>
             <div className="relative">
               <div className="flex items-center gap-3 mb-4">

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
-
+import { playClickSound2 } from '../utils/soundEffects';
 function Navbar() {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isAdmin, setIsAdmin] = useState(false);
-  
+
   // Check screen size
   useEffect(() => {
     const handleResize = () => {
@@ -100,6 +100,7 @@ function Navbar() {
         {!isMobile && (
           <div className="flex space-x-6 items-center">
             <Link 
+            onClick={()=>playClickSound2()}
               to="/dashboard" 
               className="hover:text-cyan-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-cyan-400/10 border border-transparent hover:border-cyan-400/30"
             >
@@ -107,6 +108,7 @@ function Navbar() {
               <span className="hidden md:inline font-semibold">DASHBOARD</span>
             </Link>
             <Link 
+            onClick={()=>playClickSound2()}
               to="/leaderboard"
               className="hover:text-purple-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-purple-400/10 border border-transparent hover:border-purple-400/30"
             >
@@ -114,13 +116,17 @@ function Navbar() {
               <span className="hidden md:inline font-semibold">LEADERBOARD</span>
             </Link>
             <Link 
+            onClick={()=>playClickSound2()}
               to="/products"
               className="hover:text-pink-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-pink-400/10 border border-transparent hover:border-pink-400/30"
             >
+              
               <span className="text-pink-400">🍎</span>
+
               <span className="hidden md:inline font-semibold">PRODUCTS</span>
             </Link>
             <Link 
+            onClick={()=>playClickSound2()}
               to="/profile"
               className="hover:text-green-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-green-400/10 border border-transparent hover:border-green-400/30"
             >
@@ -130,6 +136,7 @@ function Navbar() {
 
             {isAdmin && (
               <Link 
+              onClick={()=>playClickSound2()}
                 to="/admin"
                 className="hover:text-yellow-400 transition-all duration-300 transform hover:scale-110 flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-yellow-400/10 border border-transparent hover:border-yellow-400/30"
               >
