@@ -5,7 +5,7 @@ function NotFound() {
   const [board, setBoard] = useState(emptyBoard);
   const [userSymbol, setUserSymbol] = useState('X');
   const [computerSymbol, setComputerSymbol] = useState('O');
-  const [message, setMessage] = useState("Server took a nap, so let's play a game instead 😉");
+  const [message, setMessage] = useState("Server under construction, so let's play a game instead ");
   const [userScore, setUserScore] = useState(0);
   const [computerScore, setComputerScore] = useState(0);
   const [round, setRound] = useState(1);
