@@ -50,7 +50,12 @@ const productSchema = new Schema({
     }
   ],
 
-  correctOrder: [{ type: String }],
+  correctOrder:[
+    {
+      name: String,
+      description: { type: String, default: "" }
+    }
+  ],
 
   createdAt: { type: Date, default: Date.now }
 });
