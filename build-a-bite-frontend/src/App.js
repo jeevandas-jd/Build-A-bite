@@ -33,7 +33,7 @@ function App() {
   const srverClosed = true; // Change to true to simulate server closed
 
   if (srverClosed) {
-    return <MyButton />;
+    return <NotFound />;
   }
 
   return (
