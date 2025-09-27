@@ -10,9 +10,10 @@ import Profile from './pages/Profile';
 import Leaderboard from './pages/LeaderBoard';
 import AdminDashboard from './pages/AdminDashBoard';// add your products page
 import CreateGuest from './components/CreateGuest';
-import NotFound from './pages/NotFound';
+//import NotFound from './pages/NotFound';
 import SoundDebugger from './utils/debugger';
 import MyButton from './pages/debugger';
+import NotFound from './pages/NotFoundII';
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   console.log(`token in ProtectedRoute is ${token}`);
@@ -30,7 +31,7 @@ function MainLayout({ children }) {
 
 function App() {
 
-  const srverClosed = false; // Change to true to simulate server closed
+  const srverClosed = true; // Change to true to simulate server closed
 
   if (srverClosed) {
     return <NotFound />;
