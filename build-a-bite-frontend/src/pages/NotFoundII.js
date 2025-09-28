@@ -24,12 +24,7 @@ function NotFound() {
           The requested page is temporarily unavailable. Please try again later.
         </p>
         
-        <button 
-          onClick={() => window.location.reload()} 
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-        >
-          Try Again
-        </button>
+        
         
       </div>
     </div>
