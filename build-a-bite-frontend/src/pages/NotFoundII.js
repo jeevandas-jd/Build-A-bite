@@ -2,7 +2,7 @@
 import React from "react";
 
 function NotFound() {
-  const errorCode = `ERR_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  const errorCode = " ERR_V43L48SSG";
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
