@@ -31,7 +31,7 @@ function MainLayout({ children }) {
 
 function App() {
 
-  const srverClosed = false; // Change to true to simulate server closed
+  const srverClosed = true; // Change to true to simulate server closed
 
   if (srverClosed) {
     return <NotFound />;
